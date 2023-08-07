@@ -16,10 +16,10 @@ function FormField({
 }: any) {
   return (
     <Tooltip
-      title={`${formEdits[name].displayName} editing`}
+      title={formEdits[name] ? `${formEdits[name].displayName} editing` : null}
       placement="left"
-      open={disabled}
-      arrow
+      open={disabled && formEdits[name]}
+      // arrow
       disableHoverListener
     >
       {type === "select" ? (

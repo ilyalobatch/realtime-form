@@ -5,7 +5,7 @@ import * as Yup from "yup";
 import FormField from "./formElements/FormField";
 import { toast } from "react-toastify";
 import { addSubmittedInfoToFirebase } from "../../firebase/firebaseService";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
 
 interface IInitialObject {
@@ -74,8 +74,6 @@ function GenericForm({ formDefinition, socket }: any) {
   };
 
   const handleFormInputChange = (formikHandler: any) => (event: any) => {
-    formikHandler(event);
-
     const {
       target: { name, value },
     } = event;
@@ -84,34 +82,59 @@ function GenericForm({ formDefinition, socket }: any) {
       ...formikRef.current?.values,
       [name]: value,
     });
+
+    formikHandler(event);
+  };
+
+  const handleUpdateFormEdits = () => {
+    const newFormEdits = { ...formEdits };
+
+    Object.keys(newFormEdits).forEach((key: string) => {
+      if (newFormEdits[key]?.uid === currentUser?.uid) {
+        newFormEdits[key] = "";
+      }
+    });
+
+    return newFormEdits;
   };
 
   const handleFormInputFocus = (event: any) => {
     socket.emit("formEdits", {
-      ...formEdits,
-      [event.target.name]: currentUser,
+      ...handleUpdateFormEdits(),
+      [event.target.name || event.target?.id]: currentUser,
     });
   };
 
   const handleFormInputBlur = (formikHandler: any) => (event: any) => {
-    formikHandler(event);
-
     socket.emit("formEdits", {
-      ...formEdits,
+      ...handleUpdateFormEdits(),
       [event.target.name]: "",
     });
+
+    formikHandler(event);
   };
 
-  const isDisabledFieldForCurrentUser = (name: string) => {
-    console.log("Initiate disable field");
-    return formEdits[name] && formEdits[name]?.uid !== currentUser?.uid;
-  };
+  // const handleFormReset = () => {
+  //   formikRef.current?.setTouched({});
+
+  //   socket.emit("formEdits", null);
+  //   socket.emit("formValues", null);
+  // };
+
+  const isDisabledFieldForCurrentUser = useCallback(
+    (name: string) => {
+      return formEdits[name] && formEdits[name]?.uid !== currentUser?.uid;
+    },
+    [formEdits, currentUser]
+  );
 
   useEffect(() => {
     socket.on("listen_to_formValues", (newFormValues: any) => {
       if (!newFormValues) {
         return formikRef.current?.setValues(generateInitialValues());
       }
+
+      console.log("Values were updated");
 
       return formikRef.current?.setValues({
         ...formikRef.current?.values,
@@ -120,6 +143,8 @@ function GenericForm({ formDefinition, socket }: any) {
     });
 
     socket.on("listen_to_touchedFields", (newFormTouchedFields: any) => {
+      console.log("formTouched were changed");
+
       return formikRef.current?.setTouched({ ...newFormTouchedFields });
     });
 
@@ -127,6 +152,8 @@ function GenericForm({ formDefinition, socket }: any) {
       if (!newFormEdits) {
         return setFormEdits(generateInitialValues());
       }
+
+      console.log("formEdits were changed");
 
       return setFormEdits({ ...newFormEdits });
     });
@@ -189,7 +216,7 @@ function GenericForm({ formDefinition, socket }: any) {
                   {...basicProps}
                 />
               ))}
-              <Box mt={3}>
+              <Box sx={{ mt: 3, display: "flex", gap: "20px" }}>
                 <LoadingButton
                   type="submit"
                   variant="contained"
@@ -199,6 +226,17 @@ function GenericForm({ formDefinition, socket }: any) {
                 >
                   Submit
                 </LoadingButton>
+                {/* <LoadingButton
+                  type="button"
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => {
+                    console.log("Clicked");
+                    handleFormReset();
+                  }}
+                >
+                  Reset
+                </LoadingButton> */}
               </Box>
             </Form>
           );

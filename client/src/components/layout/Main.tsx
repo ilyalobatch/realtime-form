@@ -17,7 +17,14 @@ function Main({ socket }: any) {
       )}
       <div style={{ display: "flex" }}>
         <SubmittedInfoList />
-        <Container sx={{ margin: "50px 0" }}>
+        <Container
+          sx={{
+            marginLeft: "0 auto",
+            marginRight: "0 auto",
+            marginTop: "50px",
+            marginBottom: "50px",
+          }}
+        >
           {!authenticated ? (
             <Typography sx={{ textAlign: "center", color: "#fff" }}>
               Please Sign in or Register to use the form
