@@ -9,8 +9,7 @@ import Navbar from "./components/layout/Navbar";
 import Main from "./components/layout/Main";
 import io from "socket.io-client";
 
-// const socket = io("https://realtime-form-4dd968fe733a.herokuapp.com/");
-const socket = io("http://localhost:4000/");
+const socket = io("https://realtime-form.netlify.app/");
 
 function App() {
   const signIn = useAuthStore((state) => state.signIn);
