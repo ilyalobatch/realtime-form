@@ -4,7 +4,8 @@ const cors = require("cors");
 const { Server } = require("socket.io");
 
 const app = express();
-const port = process.env.PORT || 4000;
+// const port = process.env.PORT || 4000;
+const port = 4000;
 
 const server = http.createServer(app);
 
@@ -21,20 +22,11 @@ const io = new Server(server, {
   },
 });
 
-const userList = [];
 let formValues = null;
 let formTouchedFields = null;
 let formEdits = null;
 
 io.on("connection", (socket) => {
-  const removeUserFromList = () => {
-    const userIndex = userList.indexOf(socket.id);
-    userList.splice(userIndex, 1);
-  };
-
-  userList.push(socket.id);
-
-  io.emit("listen_to_users", userList);
   io.emit("listen_to_formValues", formValues);
   io.emit("listen_to_touchedFields", formTouchedFields);
   io.emit("listen_to_formEdits", formEdits);
@@ -46,7 +38,7 @@ io.on("connection", (socket) => {
       formValues = { ...formValues, ...values };
     }
 
-    io.emit("listen_to_formValues", formValues);
+    socket.broadcast.emit("listen_to_formValues", formValues);
   });
 
   socket.on("touchedFields", (fields) => {
@@ -57,11 +49,6 @@ io.on("connection", (socket) => {
   socket.on("formEdits", (fields) => {
     formEdits = fields;
     io.emit("listen_to_formEdits", formEdits);
-  });
-
-  socket.on("disconnect", () => {
-    removeUserFromList();
-    io.emit("listen_to_users", userList);
   });
 });
 
