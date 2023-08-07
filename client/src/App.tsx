@@ -9,7 +9,7 @@ import Navbar from "./components/layout/Navbar";
 import Main from "./components/layout/Main";
 import io from "socket.io-client";
 
-const socket = io("https://collaborative-form-e9bb8e1fdc52.herokuapp.com/");
+const socket = io("https://realtime-form-4dd968fe733a.herokuapp.com/");
 
 function App() {
   const signIn = useAuthStore((state) => state.signIn);
