@@ -73,6 +73,14 @@ function GenericForm({ formDefinition, socket }: any) {
     }
   };
 
+  const handleFormReset = () => {
+    formikRef.current?.resetForm();
+
+    socket.emit("touchedFields", null);
+    socket.emit("formEdits", null);
+    socket.emit("formValues", null);
+  };
+
   const handleFormInputChange = (formikHandler: any) => (event: any) => {
     const {
       target: { name, value },
@@ -114,13 +122,6 @@ function GenericForm({ formDefinition, socket }: any) {
     formikHandler(event);
   };
 
-  // const handleFormReset = () => {
-  //   formikRef.current?.setTouched({});
-
-  //   socket.emit("formEdits", null);
-  //   socket.emit("formValues", null);
-  // };
-
   const isDisabledFieldForCurrentUser = useCallback(
     (name: string) => {
       return formEdits[name] && formEdits[name]?.uid !== currentUser?.uid;
@@ -134,8 +135,6 @@ function GenericForm({ formDefinition, socket }: any) {
         return formikRef.current?.setValues(generateInitialValues());
       }
 
-      console.log("Values were updated");
-
       return formikRef.current?.setValues({
         ...formikRef.current?.values,
         ...newFormValues,
@@ -143,17 +142,20 @@ function GenericForm({ formDefinition, socket }: any) {
     });
 
     socket.on("listen_to_touchedFields", (newFormTouchedFields: any) => {
-      console.log("formTouched were changed");
+      if (!newFormTouchedFields) {
+        return formikRef.current?.setTouched({});
+      }
 
-      return formikRef.current?.setTouched({ ...newFormTouchedFields });
+      return formikRef.current?.setTouched({
+        ...formikRef.current?.touched,
+        ...newFormTouchedFields,
+      });
     });
 
     socket.on("listen_to_formEdits", (newFormEdits: any) => {
       if (!newFormEdits) {
         return setFormEdits(generateInitialValues());
       }
-
-      console.log("formEdits were changed");
 
       return setFormEdits({ ...newFormEdits });
     });
@@ -226,17 +228,15 @@ function GenericForm({ formDefinition, socket }: any) {
                 >
                   Submit
                 </LoadingButton>
-                {/* <LoadingButton
+                <LoadingButton
                   type="button"
                   variant="contained"
-                  color="secondary"
-                  onClick={() => {
-                    console.log("Clicked");
-                    handleFormReset();
-                  }}
+                  color="error"
+                  disabled={isSubmitting}
+                  onClick={() => handleFormReset()}
                 >
                   Reset
-                </LoadingButton> */}
+                </LoadingButton>
               </Box>
             </Form>
           );
