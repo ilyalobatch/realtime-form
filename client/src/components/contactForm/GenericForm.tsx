@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { addSubmittedInfoToFirebase } from "../../firebase/firebaseService";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
+import dayjs from "dayjs";
 
 interface IInitialObject {
   [key: string]: any;
@@ -15,18 +16,32 @@ interface IInitialObject {
 function GenericForm({ formDefinition, socket }: any) {
   const currentUser = useAuthStore((state) => state.currentUser);
   const formikRef = useRef<any>(null);
+  const [formTouched, setFormTouched] = useState<any>({});
   const { title, fields } = formDefinition;
+
+  const generateInitialFormEdits: any = () => {
+    const edits: IInitialObject = {};
+    fields.forEach(({ name }: any) => {
+      edits[name] = "";
+    });
+
+    return edits;
+  };
+
+  const [formEdits, setFormEdits] = useState<any>(generateInitialFormEdits());
 
   const generateInitialValues: any = () => {
     const values: IInitialObject = {};
-    fields.forEach(({ name }: any) => {
-      values[name] = "";
+    fields.forEach(({ name, type }: any) => {
+      if (type === "date") {
+        values[name] = dayjs().format("MM/DD/YYYY");
+      } else {
+        values[name] = "";
+      }
     });
 
     return values;
   };
-
-  const [formEdits, setFormEdits] = useState<any>(generateInitialValues());
 
   const generateValidationSchema = () => {
     const schema: IInitialObject = {};
@@ -55,6 +70,12 @@ function GenericForm({ formDefinition, socket }: any) {
     return Yup.object().shape({ ...schema });
   };
 
+  const resetDataForAllUsers = () => {
+    socket.emit("formValues", null);
+    socket.emit("formEdits", null);
+    socket.emit("touchedFields", null);
+  };
+
   const handleFormSubmit = async (
     values: any,
     { setSubmitting, resetForm }: any
@@ -62,9 +83,7 @@ function GenericForm({ formDefinition, socket }: any) {
     try {
       addSubmittedInfoToFirebase(values);
       resetForm();
-      socket.emit("formEdits", null);
-      socket.emit("formValues", null);
-      socket.emit("touchedFields", null);
+      resetDataForAllUsers();
       toast.success("Successfully submitted");
     } catch (error: any) {
       toast.error(error.message);
@@ -75,10 +94,7 @@ function GenericForm({ formDefinition, socket }: any) {
 
   const handleFormReset = () => {
     formikRef.current?.resetForm();
-
-    socket.emit("touchedFields", null);
-    socket.emit("formEdits", null);
-    socket.emit("formValues", null);
+    resetDataForAllUsers();
   };
 
   const handleFormInputChange = (formikHandler: any) => (event: any) => {
@@ -123,7 +139,7 @@ function GenericForm({ formDefinition, socket }: any) {
   };
 
   const isDisabledFieldForCurrentUser = useCallback(
-    (name: string) => {
+    (name: string): boolean => {
       return formEdits[name] && formEdits[name]?.uid !== currentUser?.uid;
     },
     [formEdits, currentUser]
@@ -143,18 +159,15 @@ function GenericForm({ formDefinition, socket }: any) {
 
     socket.on("listen_to_touchedFields", (newFormTouchedFields: any) => {
       if (!newFormTouchedFields) {
-        return formikRef.current?.setTouched({});
+        return setFormTouched({});
       }
 
-      return formikRef.current?.setTouched({
-        ...formikRef.current?.touched,
-        ...newFormTouchedFields,
-      });
+      return setFormTouched({ ...newFormTouchedFields });
     });
 
     socket.on("listen_to_formEdits", (newFormEdits: any) => {
       if (!newFormEdits) {
-        return setFormEdits(generateInitialValues());
+        return setFormEdits(generateInitialFormEdits());
       }
 
       return setFormEdits({ ...newFormEdits });
@@ -181,15 +194,16 @@ function GenericForm({ formDefinition, socket }: any) {
         {({
           values,
           errors,
-          touched,
           handleChange,
           handleBlur,
           isSubmitting,
+          setFieldValue,
         }) => {
           const basicProps = {
             handleChange: handleFormInputChange(handleChange),
             handleBlur: handleFormInputBlur(handleBlur),
             handleFocus: handleFormInputFocus,
+            setFieldValue,
           };
 
           return (
@@ -210,10 +224,12 @@ function GenericForm({ formDefinition, socket }: any) {
                   label={label}
                   value={values[name]}
                   error={errors[name]}
-                  touched={touched[name]}
+                  touched={formTouched[name]}
                   type={type}
                   options={options}
                   formEdits={formEdits}
+                  formikRef={formikRef}
+                  socket={socket}
                   disabled={isDisabledFieldForCurrentUser(name)}
                   {...basicProps}
                 />

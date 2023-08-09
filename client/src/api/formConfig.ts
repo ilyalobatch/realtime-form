@@ -33,5 +33,10 @@ export const contactForm = {
       type: "password",
       label: "Password",
     },
+    {
+      name: "dateInput",
+      type: "date",
+      label: "Date input",
+    },
   ],
 };

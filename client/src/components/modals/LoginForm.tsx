@@ -6,7 +6,7 @@ import { LoadingButton } from "@mui/lab";
 import { useModalStore } from "../../store/modalStore";
 import { signInWithEmail } from "../../firebase/firebaseService";
 import { toast } from "react-toastify";
-import MyTextField from "../formElements/MyTextField";
+import MyTextField from "./formElements/MyTextField";
 
 export interface ILoginInitialValues {
   email: string;

@@ -8,7 +8,7 @@ import { registerInFirebase } from "../../firebase/firebaseService";
 import { useModalStore } from "../../store/modalStore";
 import { toast } from "react-toastify";
 import { useAuthStore } from "../../store/authStore";
-import MyTextField from "../formElements/MyTextField";
+import MyTextField from "./formElements/MyTextField";
 
 export interface IRegisterInitialValues extends ILoginInitialValues {
   displayName: string;
