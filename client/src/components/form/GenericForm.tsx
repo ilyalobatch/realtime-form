@@ -1,74 +1,27 @@
 import { Form, Formik } from "formik";
 import { Box, Typography } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
-import * as Yup from "yup";
 import FormField from "./formElements/FormField";
 import { toast } from "react-toastify";
 import { addSubmittedInfoToFirebase } from "../../firebase/firebaseService";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
-import dayjs from "dayjs";
-
-interface IInitialObject {
-  [key: string]: any;
-}
+import {
+  generateInitialFormEdits,
+  generateInitialValues,
+  generateValidationSchema,
+} from "./helpers/initialData";
 
 function GenericForm({ formDefinition, socket }: any) {
-  const currentUser = useAuthStore((state) => state.currentUser);
-  const formikRef = useRef<any>(null);
-  const [formTouched, setFormTouched] = useState<any>({});
   const { title, fields } = formDefinition;
 
-  const generateInitialFormEdits: any = () => {
-    const edits: IInitialObject = {};
-    fields.forEach(({ name }: any) => {
-      edits[name] = "";
-    });
+  const currentUser = useAuthStore((state) => state.currentUser);
+  const formikRef = useRef<any>(null);
 
-    return edits;
-  };
-
-  const [formEdits, setFormEdits] = useState<any>(generateInitialFormEdits());
-
-  const generateInitialValues: any = () => {
-    const values: IInitialObject = {};
-    fields.forEach(({ name, type }: any) => {
-      if (type === "date") {
-        values[name] = dayjs().format("MM/DD/YYYY");
-      } else {
-        values[name] = "";
-      }
-    });
-
-    return values;
-  };
-
-  const generateValidationSchema = () => {
-    const schema: IInitialObject = {};
-    fields.forEach(({ name, label, type }: any) => {
-      const basicTextValidation = Yup.string().required(
-        `Please provide ${label}`
-      );
-      const basicSelectValidation = Yup.mixed().required(
-        `Please provide ${label}`
-      );
-      const basicNumberValidation = Yup.number()
-        .min(1)
-        .required(`Please provide ${label}`);
-
-      if (type === "email") {
-        schema[name] = basicTextValidation.email();
-      } else if (type === "number") {
-        schema[name] = basicNumberValidation;
-      } else if (type === "select") {
-        schema[name] = basicSelectValidation;
-      } else {
-        schema[name] = basicTextValidation;
-      }
-    });
-
-    return Yup.object().shape({ ...schema });
-  };
+  const [formTouched, setFormTouched] = useState<any>({});
+  const [formEdits, setFormEdits] = useState<any>(
+    generateInitialFormEdits(fields)
+  );
 
   const resetDataForAllUsers = () => {
     socket.emit("formValues", null);
@@ -86,6 +39,7 @@ function GenericForm({ formDefinition, socket }: any) {
       resetDataForAllUsers();
       toast.success("Successfully submitted");
     } catch (error: any) {
+      console.log(formikRef.current);
       toast.error(error.message);
     } finally {
       setSubmitting(false);
@@ -148,7 +102,7 @@ function GenericForm({ formDefinition, socket }: any) {
   useEffect(() => {
     socket.on("listen_to_formValues", (newFormValues: any) => {
       if (!newFormValues) {
-        return formikRef.current?.setValues(generateInitialValues());
+        return formikRef.current?.setValues(generateInitialValues(fields));
       }
 
       return formikRef.current?.setValues({
@@ -167,7 +121,7 @@ function GenericForm({ formDefinition, socket }: any) {
 
     socket.on("listen_to_formEdits", (newFormEdits: any) => {
       if (!newFormEdits) {
-        return setFormEdits(generateInitialFormEdits());
+        return setFormEdits(generateInitialFormEdits(fields));
       }
 
       return setFormEdits({ ...newFormEdits });
@@ -187,8 +141,8 @@ function GenericForm({ formDefinition, socket }: any) {
     fields && (
       <Formik
         innerRef={formikRef}
-        initialValues={generateInitialValues()}
-        validationSchema={generateValidationSchema()}
+        initialValues={generateInitialValues(fields)}
+        validationSchema={generateValidationSchema(fields)}
         onSubmit={handleFormSubmit}
       >
         {({
@@ -248,6 +202,7 @@ function GenericForm({ formDefinition, socket }: any) {
                   type="button"
                   variant="contained"
                   color="error"
+                  loading={isSubmitting}
                   disabled={isSubmitting}
                   onClick={() => handleFormReset()}
                 >

@@ -72,16 +72,21 @@ function FormField({
                   <DesktopDatePicker
                     label={label}
                     value={dayjs(value)}
-                    format={"DD-MM-YYYY"}
+                    format={"DD-MMM-YYYY"}
                     onOpen={() => handleFocus({ target: { name, value } })}
                     onClose={() => handleBlur({ target: { name, value } })}
                     disabled={disabled}
                     onChange={(value) => {
                       setFieldValue(name, value);
 
+                      formikRef.current?.setValues({
+                        ...formikRef.current?.values,
+                        [name]: value?.format("MM-DD-YYYY"),
+                      });
+
                       socket.emit("formValues", {
                         ...formikRef.current?.values,
-                        [name]: value?.format("MM/DD/YYYY"),
+                        [name]: value?.format("MM-DD-YYYY"),
                       });
                     }}
                     slotProps={{

@@ -1,4 +1,4 @@
-export const nationalities = [
+const nationalities = [
   { nationalityID: 1, countryCode: "GB", nationality: "British" },
   { nationalityID: 34, countryCode: "AF", nationality: "Afghan" },
   { nationalityID: 35, countryCode: "AL", nationality: "Albanian" },
@@ -158,3 +158,5 @@ export const nationalities = [
   { nationalityID: 162, countryCode: "YE", nationality: "Yemeni" },
   { nationalityID: 163, countryCode: "ZM", nationality: "Zambian" },
 ];
+
+module.exports = nationalities;

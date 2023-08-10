@@ -1,6 +1,7 @@
-import { positions } from "./positions";
+const positions = require("./options/positions");
+const nationalities = require("./options/nationalities");
 
-export const contactForm = {
+const contactForm = {
   title: "Contact Form",
 
   fields: [
@@ -17,6 +18,12 @@ export const contactForm = {
       type: "select",
       label: "Position",
       options: positions,
+    },
+    {
+      name: "nationality",
+      type: "select",
+      label: "Nationality",
+      options: nationalities,
     },
     {
       name: "age",
@@ -40,3 +47,5 @@ export const contactForm = {
     },
   ],
 };
+
+module.exports = contactForm;

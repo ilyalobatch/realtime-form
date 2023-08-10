@@ -1,4 +1,4 @@
-export const positions = [
+const positions = [
   { positionID: 1, position: "UI/UX Designer" },
   { positionID: 2, position: "Front End Developer" },
   { positionID: 3, position: "Back End Developer" },
@@ -9,3 +9,5 @@ export const positions = [
   { positionID: 8, position: "Customer Service Representative" },
   { positionID: 9, position: "SEO Specialist" },
 ];
+
+module.exports = positions;

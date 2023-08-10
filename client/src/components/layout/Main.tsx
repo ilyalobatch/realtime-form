@@ -1,20 +1,21 @@
 import { Container, Typography } from "@mui/material";
-import { useState } from "react";
-import UnauthModal from "../modals/UnauthModal";
+import { useEffect, useState } from "react";
 import SubmittedInfoList from "../list/SubmittedInfoList";
-import GenericForm from "../contactForm/GenericForm";
-import { contactForm } from "../../api/formConfig";
+import GenericForm from "../form/GenericForm";
 import { useAuthStore } from "../../store/authStore";
 
 function Main({ socket }: any) {
   const authenticated = useAuthStore((state) => state.authenticated);
-  const [openUnauthModal, setUnauthOpenModal] = useState(false);
+  const [formConfig, setFormConfig] = useState(null);
+
+  useEffect(() => {
+    socket.on("formConfig", (config: any) => {
+      setFormConfig(config);
+    });
+  }, [socket]);
 
   return (
     <>
-      {openUnauthModal && (
-        <UnauthModal setUnauthOpenModal={setUnauthOpenModal} />
-      )}
       <div style={{ display: "flex" }}>
         <SubmittedInfoList />
         <Container
@@ -30,7 +31,7 @@ function Main({ socket }: any) {
               Please Sign in or Register to use the form
             </Typography>
           ) : (
-            <GenericForm formDefinition={contactForm} socket={socket} />
+            <GenericForm formDefinition={formConfig} socket={socket} />
           )}
         </Container>
       </div>

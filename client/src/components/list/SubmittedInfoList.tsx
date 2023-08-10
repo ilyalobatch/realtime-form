@@ -61,7 +61,7 @@ function CandidateList() {
           color: "#fff",
           backgroundColor: "#0779CC",
           position: "relative",
-          minHeight: "90vh",
+          minHeight: "95vh",
         },
       }}
     >
