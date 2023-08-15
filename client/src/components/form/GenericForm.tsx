@@ -12,7 +12,10 @@ import {
   generateValidationSchema,
 } from "./helpers/initialData";
 
-function GenericForm({ formDefinition, socket }: any) {
+function GenericForm({
+  formDefinition = { title: "", fields: [] },
+  socket,
+}: any) {
   const { title, fields } = formDefinition;
 
   const currentUser = useAuthStore((state) => state.currentUser);
