@@ -6,13 +6,14 @@ import { useAuthStore } from "../../store/authStore";
 
 function Main({ socket }: any) {
   const authenticated = useAuthStore((state) => state.authenticated);
-  const [formConfig, setFormConfig] = useState(null);
+  const [formConfig, setFormConfig] = useState();
 
   useEffect(() => {
     socket.on("formConfig", (config: any) => {
       setFormConfig(config);
     });
-  }, [socket]);
+    console.log(formConfig);
+  }, [socket, formConfig]);
 
   return (
     <>

@@ -7,7 +7,7 @@ interface IInitialObject {
 
 export const generateValidationSchema = (fields: any) => {
   const schema: IInitialObject = {};
-  fields.forEach(({ name, label, type }: any) => {
+  fields?.forEach(({ name, label, type }: any) => {
     const basicTextValidation = Yup.string().required(
       `Please provide ${label}`
     );
@@ -34,7 +34,7 @@ export const generateValidationSchema = (fields: any) => {
 
 export const generateInitialValues: any = (fields: any) => {
   const values: IInitialObject = {};
-  fields.forEach(({ name, type }: any) => {
+  fields?.forEach(({ name, type }: any) => {
     if (type === "date") {
       values[name] = dayjs().format("MM-DD-YYYY");
     } else {
@@ -47,7 +47,7 @@ export const generateInitialValues: any = (fields: any) => {
 
 export const generateInitialFormEdits: any = (fields: any) => {
   const edits: IInitialObject = {};
-  fields.forEach(({ name }: any) => {
+  fields?.forEach(({ name }: any) => {
     edits[name] = "";
   });
 
